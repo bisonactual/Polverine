@@ -22,6 +22,12 @@
 *.app
 *.elf
 
+# Node / pnpm
+node_modules/
+dist/
+.wrangler/
+*.local
+
 # BOSCH SDK (proprietary binaries - do not distribute)
 deps/bosch-sensortec/BMV080-SDK/
 deps/bosch-sensortec/bsec_library_v3.x/

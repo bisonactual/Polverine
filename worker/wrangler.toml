@@ -1,0 +1,11 @@
+name            = "polverine-worker"
+main            = "src/index.ts"
+compatibility_date = "2025-01-01"
+
+[[d1_databases]]
+binding      = "DB"
+database_name = "polverine"
+database_id  = "367ca5ed-ca3a-463e-b176-778dde3e8238"   # wrangler d1 create polverine
+
+# API_KEY must be set as a secret:
+#   wrangler secret put API_KEY

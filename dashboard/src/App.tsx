@@ -1,15 +1,15 @@
 import { useEffect, useState, useCallback, useRef } from 'react'
 import {
-  AlertTriangle, Thermometer, Droplets, Gauge, FlaskConical, Wind,
+  AlertTriangle, Thermometer, Droplets, Gauge, Wind,
   History, LayoutDashboard, Download, FileImage,
 } from 'lucide-react'
 
 import type { Reading } from '@/types'
 import { fetchLatest, fetchHistory } from '@/lib/api'
-import { IAQ_ACCURACY_LABEL } from '@/lib/aqi'
 import { formatDateTime, round } from '@/lib/utils'
 
 import { Header } from '@/components/Header'
+import { IaqScore } from '@/components/IaqScore'
 import { MetricCard } from '@/components/MetricCard'
 import { PmCard } from '@/components/PmCard'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
@@ -78,7 +78,7 @@ export default function App() {
 
   const exportCsv = useCallback(() => {
     if (!history.length) return
-    const header = ['timestamp', 'iaq', 'iaq_accuracy', 'temperature_c', 'humidity_pct', 'pressure_hpa', 'co2_eq_ppm', 'voc_eq_ppm', 'pm1_ug_m3', 'pm2_5_ug_m3', 'pm10_ug_m3', 'obstructed']
+    const header = ['timestamp', 'iaq', 'iaq_accuracy', 'temperature_c', 'humidity_pct', 'pressure_hpa', 'voc_eq_ppm', 'pm1_ug_m3', 'pm2_5_ug_m3', 'pm10_ug_m3', 'obstructed']
     const rows = history.map(reading => [
       new Date(reading.ts * 1000).toISOString(),
       reading.iaq,
@@ -86,7 +86,6 @@ export default function App() {
       reading.temperature,
       reading.humidity,
       reading.pressure,
-      reading.co2_eq,
       reading.voc_eq,
       reading.pm1,
       reading.pm2_5,
@@ -178,16 +177,13 @@ export default function App() {
           loading={loading}
         />
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
-          <MetricCard
-            title="IAQ"
-            unit="index"
-            value={latest ? round(latest.iaq) : null}
-            icon={LayoutDashboard}
-            color="text-emerald-600"
-            loading={loading}
-            sub={latest ? IAQ_ACCURACY_LABEL[latest.iaq_accuracy] ?? 'Unknown accuracy' : undefined}
-          />
+        <IaqScore
+          iaq={latest?.iaq ?? null}
+          accuracy={latest?.iaq_accuracy ?? 0}
+          loading={loading}
+        />
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
           <MetricCard
             title="Temperature"
             unit="°C"
@@ -213,16 +209,7 @@ export default function App() {
             loading={loading}
           />
           <MetricCard
-            title="CO₂ equiv."
-            unit="ppm"
-            value={latest ? round(latest.co2_eq, 0) : null}
-            icon={FlaskConical}
-            color="text-teal-500"
-            loading={loading}
-            sub="BSEC estimate"
-          />
-          <MetricCard
-            title="VOC equiv."
+            title="VOC estimate"
             unit="ppm"
             value={latest ? round(latest.voc_eq, 2) : null}
             icon={Wind}

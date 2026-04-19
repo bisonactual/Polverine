@@ -38,3 +38,6 @@ deps/bosch-sensortec/bsec_library_v3.x/
 **/lib/libalgobsec.a
 **/lib/lib_bmv080.a
 **/lib/lib_postProcessor.a
+
+# PlatformIO build output
+firmware/.pio/

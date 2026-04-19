@@ -21,14 +21,21 @@ export function getIaqBand(iaq: number): AqiBand {
   return IAQ_BANDS.find(b => iaq >= b.min && iaq <= b.max) ?? IAQ_BANDS[IAQ_BANDS.length - 1]
 }
 
-export interface PmBand { label: string; color: string; hex: string; max: number }
+export interface PmBand {
+  label: string
+  description: string
+  note?: string
+  color: string
+  hex: string
+  max: number
+}
 
 export const PM25_BANDS: PmBand[] = [
-  { label: '0-10',  color: 'bg-emerald-500', hex: '#10b981', max: 10 },
-  { label: '10-20', color: 'bg-green-500',   hex: '#22c55e', max: 20 },
-  { label: '20-50', color: 'bg-yellow-400',  hex: '#facc15', max: 50 },
-  { label: '50-90', color: 'bg-orange-500',  hex: '#f97316', max: 90 },
-  { label: '91+',   color: 'bg-red-500',     hex: '#ef4444', max: Infinity },
+  { label: 'EXCELLENT', description: 'No dust particles present', color: 'bg-green-500', hex: '#22c55e', max: 10 },
+  { label: 'VERY GOOD', description: 'Very low dust risk', color: 'bg-green-500', hex: '#22c55e', max: 20 },
+  { label: 'MODERATE DUST RISK', description: 'Be aware of dust risk', note: 'Mask suggested', color: 'bg-yellow-400', hex: '#facc15', max: 50 },
+  { label: 'HIGH DUST RISK', description: 'Mask Recommended', color: 'bg-orange-500', hex: '#f97316', max: 90 },
+  { label: 'VERY HIGH DUST RISK', description: 'Mask Recommended', note: 'Avoid workshop if possible', color: 'bg-red-500', hex: '#ef4444', max: Infinity },
 ]
 
 export function getPm25Band(pm: number): PmBand {

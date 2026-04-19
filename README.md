@@ -1,3 +1,5 @@
+Warning: Heavily reworked. Firmware completely rebuilt for our makerspace. Now uses nvs for config, firmware pushes https to a cloudflare worker and is displayed on a dashboard. Temp compensation needs to be applied, and bosch files added yourself. 
+
 # Polverine
 The Polverine project is a mikroBUS™ board designed for environmental sensing and monitoring applications.
 

@@ -15,20 +15,19 @@ interface Props {
 }
 
 const PM_CARD_TONES: Record<string, string> = {
-  '0-10': 'bg-emerald-500 text-white border-emerald-600',
+  '0-10': 'bg-green-500 text-white border-green-600',
   '10-20': 'bg-green-500 text-white border-green-600',
   '20-50': 'bg-yellow-400 text-slate-900 border-yellow-500',
   '50-90': 'bg-orange-500 text-white border-orange-600',
   '91+': 'bg-red-500 text-white border-red-600',
 }
 
-function Bar({ value, max }: { value: number; max: number }) {
+function Bar({ value, max, lightCard }: { value: number; max: number; lightCard: boolean }) {
   const pct = Math.min((value / max) * 100, 100)
-  const band = getPm25Band(value)
   return (
-    <div className="h-2 rounded-full bg-white/25 overflow-hidden w-full">
+    <div className={cn('h-2 rounded-full overflow-hidden w-full', lightCard ? 'bg-white/55' : 'bg-white/25')}>
       <div
-        className={cn('h-full rounded-full transition-all duration-500', band.color)}
+        className={cn('h-full rounded-full transition-all duration-500', lightCard ? 'bg-slate-900/80' : 'bg-white/90')}
         style={{ width: `${pct}%` }}
       />
     </div>
@@ -91,7 +90,7 @@ export function PmCard({ pm1, pm2_5, pm10, obstructed, loading }: Props) {
                     {value !== null ? `${value.toFixed(1)} µg/m³` : '—'}
                   </span>
                 </div>
-                {value !== null && <Bar value={value} max={label === 'PM10' ? 150 : 90} />}
+                {value !== null && <Bar value={value} max={label === 'PM10' ? 150 : 90} lightCard={isLight} />}
               </div>
             ))}
           </div>

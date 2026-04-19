@@ -1,0 +1,7 @@
+key,type,encoding,value
+polverine,namespace,,
+wifi_ssid,data,string,YOUR_WIFI_SSID
+wifi_pwd,data,string,YOUR_WIFI_PASSWORD
+worker_url,data,string,https://polverine-worker.YOUR_SUBDOMAIN.workers.dev/ingest
+api_key,data,string,YOUR_API_KEY
+device_id,data,string,workshop-01

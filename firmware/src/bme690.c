@@ -5,6 +5,8 @@
 #include "driver/i2c_master.h"
 #include "esp_log.h"
 #include "esp_timer.h"
+#include "nvs_flash.h"
+#include "nvs.h"
 
 #include "bme69x.h"
 #include "bsec_integration.h"
@@ -15,7 +17,6 @@ static const char *TAG = "bme690";
 
 static SemaphoreHandle_t       s_data_mutex;
 static sensor_reading_t        s_latest = {0};
-static uint8_t                 s_bsec_mem[BSEC_INSTANCE_SIZE];
 static i2c_master_bus_handle_t s_bus_handle;
 static i2c_master_dev_handle_t s_dev_handle;
 
@@ -31,12 +32,6 @@ static BME69X_INTF_RET_TYPE i2c_read(uint8_t reg, uint8_t *data, uint32_t len, v
 
 static BME69X_INTF_RET_TYPE i2c_write(uint8_t reg, const uint8_t *data, uint32_t len, void *intf_ptr)
 {
-    i2c_cmd_handle_t cmd = i2c_cmd_link_create();
-    i2c_master_start(cmd);
-    i2c_master_write_byte(cmd, (BME690_I2C_ADDR << 1) | I2C_MASTER_WRITE, true);
-    i2c_master_write_byte(cmd, reg, true);
-    i2c_master_write(cmd, data, len, true);
-    i2c_master_stop(cmd);
     uint8_t buf[len + 1];
     buf[0] = reg;
     memcpy(&buf[1], data, len);
@@ -74,27 +69,49 @@ static uint32_t get_timestamp_ms(void)
     return (uint32_t)(esp_timer_get_time() / 1000ULL);
 }
 
-#define BSEC_STATE_NVS_KEY "bsec_state"
+#define BSEC_NVS_PARTITION  "bsec"
+#define BSEC_NVS_NAMESPACE  "bsec"
+#define BSEC_NVS_KEY        "state"
 
 static uint32_t bsec_state_load(uint8_t *buf, uint32_t n)
 {
-    // TODO: load BSEC state from NVS 'bsec' partition for calibration persistence
-    (void)buf; (void)n;
-    return 0;
+    nvs_handle_t h;
+    esp_err_t err = nvs_open_from_partition(BSEC_NVS_PARTITION, BSEC_NVS_NAMESPACE, NVS_READONLY, &h);
+    if (err != ESP_OK) {
+        ESP_LOGI(TAG, "no saved BSEC state, starting fresh");
+        return 0;
+    }
+
+    size_t len = n;
+    err = nvs_get_blob(h, BSEC_NVS_KEY, buf, &len);
+    nvs_close(h);
+
+    if (err != ESP_OK) return 0;
+    ESP_LOGI(TAG, "BSEC state restored (%d bytes)", (int)len);
+    return (uint32_t)len;
 }
 
 static void bsec_state_save(const uint8_t *buf, uint32_t len)
 {
-    // TODO: save BSEC state to NVS 'bsec' partition
-    (void)buf; (void)len;
+    nvs_handle_t h;
+    esp_err_t err = nvs_open_from_partition(BSEC_NVS_PARTITION, BSEC_NVS_NAMESPACE, NVS_READWRITE, &h);
+    if (err != ESP_OK) {
+        ESP_LOGW(TAG, "BSEC state save: cannot open NVS partition");
+        return;
+    }
+
+    err = nvs_set_blob(h, BSEC_NVS_KEY, buf, len);
+    if (err == ESP_OK) nvs_commit(h);
+    nvs_close(h);
+
+    if (err == ESP_OK) ESP_LOGI(TAG, "BSEC state saved (%lu bytes)", (unsigned long)len);
+    else ESP_LOGW(TAG, "BSEC state save failed: %s", esp_err_to_name(err));
 }
 
 static uint32_t bsec_config_load(uint8_t *buf, uint32_t n)
 {
-    // bsec_iaq.c (included via build_src_filter) provides bsec_config_iaq[]
-    extern const uint8_t bsec_config_iaq[];
-    extern const uint32_t bsec_config_iaq_len;
-    uint32_t copy = (bsec_config_iaq_len < n) ? bsec_config_iaq_len : n;
+    extern const uint8_t bsec_config_iaq[554];
+    uint32_t copy = (554u < n) ? 554u : n;
     memcpy(buf, bsec_config_iaq, copy);
     return copy;
 }
@@ -114,8 +131,6 @@ static void output_ready(outputs_t *out)
 
 static void bsec_task(void *arg)
 {
-    allocate_memory(s_bsec_mem, 0);
-
     return_values_init ret = bsec_iot_init(SAMPLE_RATE, bme69x_interface_init, bsec_state_load, bsec_config_load);
     if (ret.bme69x_status != 0 || ret.bsec_status != 0) {
         ESP_LOGE(TAG, "bsec_iot_init failed: bme=%d bsec=%d", ret.bme69x_status, ret.bsec_status);
@@ -136,6 +151,13 @@ static void bsec_task(void *arg)
 
 void bme690_init(void)
 {
+    // Initialise the dedicated BSEC NVS partition for calibration state persistence
+    esp_err_t err = nvs_flash_init_partition(BSEC_NVS_PARTITION);
+    if (err == ESP_ERR_NVS_NO_FREE_PAGES || err == ESP_ERR_NVS_NEW_VERSION_FOUND) {
+        nvs_flash_erase_partition(BSEC_NVS_PARTITION);
+        nvs_flash_init_partition(BSEC_NVS_PARTITION);
+    }
+
     i2c_master_bus_config_t bus_cfg = {
         .clk_source        = I2C_CLK_SRC_DEFAULT,
         .i2c_port          = -1,

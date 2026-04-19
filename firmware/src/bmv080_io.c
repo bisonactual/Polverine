@@ -1,7 +1,6 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "driver/spi_master.h"
-#include "driver/gpio.h"
 #include "esp_timer.h"
 #include "esp_log.h"
 #include "board.h"
@@ -10,7 +9,7 @@
 static const char *TAG = "bmv080_io";
 static spi_device_handle_t s_spi = NULL;
 
-void bmv080_io_init(void)
+bmv080_sercom_handle_t bmv080_io_init(void)
 {
     spi_bus_config_t bus_cfg = {
         .mosi_io_num   = BMV080_PIN_MOSI,
@@ -31,21 +30,24 @@ void bmv080_io_init(void)
     };
     ESP_ERROR_CHECK(spi_bus_add_device(BMV080_SPI_HOST, &dev_cfg, &s_spi));
     ESP_LOGI(TAG, "SPI init ok");
+    return (bmv080_sercom_handle_t)s_spi;
 }
 
-// BMV080 uses 16-bit addressed SPI with big-endian payload
-bmv080_status_code_t bmv080_io_read(bmv080_sercom_handle_t handle, uint8_t *data, uint16_t len)
+// SDK passes sercom_handle as the SPI device handle (void*).
+// header is a 16-bit word sent MSB-first as the address phase.
+// payload words are 16-bit, MSB-first on the wire — swap to/from little-endian.
+
+int8_t bmv080_io_read(bmv080_sercom_handle_t sercom_handle, uint16_t header,
+                      uint16_t *payload, uint16_t payload_length)
 {
-    uint16_t header = *(uint16_t *)handle;
-    uint16_t *payload = (uint16_t *)data;
-    uint16_t payload_length = len / 2;
+    spi_device_handle_t spi = (spi_device_handle_t)sercom_handle;
 
     spi_transaction_ext_t t = {
         .base = {
-            .flags    = SPI_TRANS_VARIABLE_ADDR | SPI_TRANS_VARIABLE_CMD,
-            .addr     = header,
-            .length   = payload_length * 2 * 8,
-            .rxlength = payload_length * 2 * 8,
+            .flags     = SPI_TRANS_VARIABLE_ADDR | SPI_TRANS_VARIABLE_CMD,
+            .addr      = header,
+            .length    = payload_length * 16,
+            .rxlength  = payload_length * 16,
             .rx_buffer = payload,
             .tx_buffer = NULL,
         },
@@ -54,33 +56,32 @@ bmv080_status_code_t bmv080_io_read(bmv080_sercom_handle_t handle, uint8_t *data
         .dummy_bits   = 0,
     };
 
-    esp_err_t err = spi_device_polling_transmit(s_spi, (spi_transaction_t *)&t);
+    esp_err_t err = spi_device_polling_transmit(spi, (spi_transaction_t *)&t);
+    if (err != ESP_OK) return -1;
 
     for (int i = 0; i < payload_length; i++) {
-        payload[i] = (payload[i] << 8) | (payload[i] >> 8);
+        payload[i] = (uint16_t)((payload[i] << 8) | (payload[i] >> 8));
     }
-
-    return (err == ESP_OK) ? E_BMV080_OK : E_BMV080_ERROR_HW_READ;
+    return 0;
 }
 
-bmv080_status_code_t bmv080_io_write(bmv080_sercom_handle_t handle, const uint8_t *data, uint16_t len)
+int8_t bmv080_io_write(bmv080_sercom_handle_t sercom_handle, uint16_t header,
+                       const uint16_t *payload, uint16_t payload_length)
 {
-    uint16_t header = *(uint16_t *)handle;
-    const uint16_t *payload = (const uint16_t *)data;
-    uint16_t payload_length = len / 2;
+    spi_device_handle_t spi = (spi_device_handle_t)sercom_handle;
 
-    uint16_t *swapped = calloc(payload_length, sizeof(uint16_t));
-    if (!swapped) return E_BMV080_ERROR_HW_WRITE;
+    uint16_t *swapped = malloc(payload_length * sizeof(uint16_t));
+    if (!swapped) return -1;
 
     for (int i = 0; i < payload_length; i++) {
-        swapped[i] = (payload[i] << 8) | (payload[i] >> 8);
+        swapped[i] = (uint16_t)((payload[i] << 8) | (payload[i] >> 8));
     }
 
     spi_transaction_ext_t t = {
         .base = {
-            .flags    = SPI_TRANS_VARIABLE_ADDR | SPI_TRANS_VARIABLE_CMD,
-            .addr     = header,
-            .length   = payload_length * 2 * 8,
+            .flags     = SPI_TRANS_VARIABLE_ADDR | SPI_TRANS_VARIABLE_CMD,
+            .addr      = header,
+            .length    = payload_length * 16,
             .rx_buffer = NULL,
             .tx_buffer = swapped,
         },
@@ -89,15 +90,15 @@ bmv080_status_code_t bmv080_io_write(bmv080_sercom_handle_t handle, const uint8_
         .dummy_bits   = 0,
     };
 
-    esp_err_t err = spi_device_transmit(s_spi, (spi_transaction_t *)&t);
+    esp_err_t err = spi_device_transmit(spi, (spi_transaction_t *)&t);
     free(swapped);
-
-    return (err == ESP_OK) ? E_BMV080_OK : E_BMV080_ERROR_HW_WRITE;
+    return (err == ESP_OK) ? 0 : -1;
 }
 
-void bmv080_io_delay_ms(uint32_t ms)
+int8_t bmv080_io_delay_ms(uint32_t duration_in_ms)
 {
-    vTaskDelay(pdMS_TO_TICKS(ms));
+    vTaskDelay(pdMS_TO_TICKS(duration_in_ms));
+    return 0;
 }
 
 uint32_t bmv080_io_tick_ms(void)

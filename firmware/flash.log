@@ -1,0 +1,116 @@
+Processing polverine (platform: espressif32@6.11.0; board: polverine; framework: espidf)
+--------------------------------------------------------------------------------
+Verbose mode can be enabled via `-v, --verbose` option
+CONFIGURATION: https://docs.platformio.org/page/boards/espressif32/polverine.html
+PLATFORM: Espressif 32 (6.11.0) > BlackIoT Polverine
+HARDWARE: ESP32S3 240MHz, 320KB RAM, 8MB Flash
+DEBUG: Current (esp-builtin) On-board (esp-builtin) External (cmsis-dap, esp-bridge, esp-prog, iot-bus-jtag, jlink, minimodule, olimex-arm-usb-ocd, olimex-arm-usb-ocd-h, olimex-arm-usb-tiny-h, olimex-jtag-tiny, tumpa)
+PACKAGES: 
+ - framework-espidf @ 3.50401.0 (5.4.1) 
+ - tool-cmake @ 3.16.4 
+ - tool-esp-rom-elfs @ 0.0.1+20241011 
+ - tool-esptoolpy @ 1.40501.0 (4.5.1) 
+ - tool-mkfatfs @ 2.0.1 
+ - tool-mklittlefs @ 1.203.210628 (2.3) 
+ - tool-mkspiffs @ 2.230.0 (2.30) 
+ - tool-ninja @ 1.7.1 
+ - tool-riscv32-esp-elf-gdb @ 12.1.0+20221002 
+ - tool-xtensa-esp-elf-gdb @ 12.1.0+20221002 
+ - toolchain-esp32ulp @ 1.23800.240113 (2.38.0) 
+ - toolchain-riscv32-esp @ 14.2.0+20241119 
+ - toolchain-xtensa-esp-elf @ 14.2.0+20241119
+Warning: the 'src_filter' option cannot be used with ESP-IDF. Select source files to build in the project CMakeLists.txt file.
+
+Reading CMake configuration...
+LDF: Library Dependency Finder -> https://bit.ly/configure-pio-ldf
+LDF Modes: Finder ~ chain, Compatibility ~ soft
+Found 0 compatible libraries
+Scanning dependencies...
+No dependencies
+Building in release mode
+Retrieving maximum program size .pio/build/polverine/firmware.elf
+Checking size .pio/build/polverine/firmware.elf
+Advanced Memory Usage is available via "PlatformIO Home > Project Inspect"
+RAM:   [==        ]  19.1% (used 62660 bytes from 327680 bytes)
+Flash: [====      ]  35.3% (used 1110708 bytes from 3145728 bytes)
+Configuring upload protocol...
+AVAILABLE: cmsis-dap, esp-bridge, esp-builtin, esp-prog, espota, esptool, iot-bus-jtag, jlink, minimodule, olimex-arm-usb-ocd, olimex-arm-usb-ocd-h, olimex-arm-usb-tiny-h, olimex-jtag-tiny, tumpa
+CURRENT: upload_protocol = esptool
+Looking for upload port...
+Using manually specified: /dev/ttyACM0
+Uploading .pio/build/polverine/firmware.bin
+esptool.py v4.5.1
+Serial port /dev/ttyACM0
+Connecting...
+Chip is ESP32-S3 (revision v0.2)
+Features: WiFi, BLE
+Crystal is 40MHz
+MAC: b4:3a:45:ba:2e:cc
+Uploading stub...
+Running stub...
+Stub running...
+Changing baud rate to 460800
+Changed.
+Configuring flash size...
+Flash will be erased from 0x00000000 to 0x00005fff...
+Flash will be erased from 0x00008000 to 0x00008fff...
+Flash will be erased from 0x00010000 to 0x0011ffff...
+Compressed 21024 bytes to 13373...
+Writing at 0x00000000... (100 %)
+Wrote 21024 bytes (13373 compressed) at 0x00000000 in 0.4 seconds (effective 419.4 kbit/s)...
+Hash of data verified.
+Compressed 3072 bytes to 133...
+Writing at 0x00008000... (100 %)
+Wrote 3072 bytes (133 compressed) at 0x00008000 in 0.0 seconds (effective 523.4 kbit/s)...
+Hash of data verified.
+Compressed 1111104 bytes to 714754...
+Writing at 0x00010000... (2 %)
+Writing at 0x0001caaf... (4 %)
+Writing at 0x00027f3e... (6 %)
+Writing at 0x0002ca95... (9 %)
+Writing at 0x0003195f... (11 %)
+Writing at 0x00036df0... (13 %)
+Writing at 0x0003dfa2... (15 %)
+Writing at 0x000460ec... (18 %)
+Writing at 0x0004ea0c... (20 %)
+Writing at 0x000548f0... (22 %)
+Writing at 0x0005a66c... (25 %)
+Writing at 0x000605ec... (27 %)
+Writing at 0x00066c3f... (29 %)
+Writing at 0x0006c908... (31 %)
+Writing at 0x000722a4... (34 %)
+Writing at 0x00078017... (36 %)
+Writing at 0x0007ddd5... (38 %)
+Writing at 0x00083ce5... (40 %)
+Writing at 0x00089c67... (43 %)
+Writing at 0x0008fb05... (45 %)
+Writing at 0x00095667... (47 %)
+Writing at 0x0009baa8... (50 %)
+Writing at 0x000a1853... (52 %)
+Writing at 0x000a7332... (54 %)
+Writing at 0x000ace12... (56 %)
+Writing at 0x000b1f8f... (59 %)
+Writing at 0x000b74ec... (61 %)
+Writing at 0x000bc2c1... (63 %)
+Writing at 0x000c12bc... (65 %)
+Writing at 0x000c682e... (68 %)
+Writing at 0x000cbb80... (70 %)
+Writing at 0x000d0cdd... (72 %)
+Writing at 0x000d5f21... (75 %)
+Writing at 0x000dbc13... (77 %)
+Writing at 0x000e5472... (79 %)
+Writing at 0x000ec775... (81 %)
+Writing at 0x000f1f1e... (84 %)
+Writing at 0x000f81cc... (86 %)
+Writing at 0x000fde9a... (88 %)
+Writing at 0x001031a8... (90 %)
+Writing at 0x0010961e... (93 %)
+Writing at 0x0010f89e... (95 %)
+Writing at 0x00115e52... (97 %)
+Writing at 0x0011b9b1... (100 %)
+Wrote 1111104 bytes (714754 compressed) at 0x00010000 in 8.3 seconds (effective 1074.2 kbit/s)...
+Hash of data verified.
+
+Leaving...
+Hard resetting via RTS pin...
+========================= [SUCCESS] Took 18.19 seconds =========================

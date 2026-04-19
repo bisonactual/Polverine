@@ -1,0 +1,43 @@
+Processing polverine (platform: espressif32@6.11.0; board: polverine; framework: espidf)
+--------------------------------------------------------------------------------
+Verbose mode can be enabled via `-v, --verbose` option
+CONFIGURATION: https://docs.platformio.org/page/boards/espressif32/polverine.html
+PLATFORM: Espressif 32 (6.11.0) > BlackIoT Polverine
+HARDWARE: ESP32S3 240MHz, 320KB RAM, 8MB Flash
+DEBUG: Current (esp-builtin) On-board (esp-builtin) External (cmsis-dap, esp-bridge, esp-prog, iot-bus-jtag, jlink, minimodule, olimex-arm-usb-ocd, olimex-arm-usb-ocd-h, olimex-arm-usb-tiny-h, olimex-jtag-tiny, tumpa)
+PACKAGES: 
+ - framework-espidf @ 3.50401.0 (5.4.1) 
+ - tool-cmake @ 3.16.4 
+ - tool-esp-rom-elfs @ 0.0.1+20241011 
+ - tool-esptoolpy @ 1.40501.0 (4.5.1) 
+ - tool-ninja @ 1.7.1 
+ - tool-riscv32-esp-elf-gdb @ 12.1.0+20221002 
+ - tool-xtensa-esp-elf-gdb @ 12.1.0+20221002 
+ - toolchain-esp32ulp @ 1.23800.240113 (2.38.0) 
+ - toolchain-riscv32-esp @ 14.2.0+20241119 
+ - toolchain-xtensa-esp-elf @ 14.2.0+20241119
+Warning: the 'src_filter' option cannot be used with ESP-IDF. Select source files to build in the project CMakeLists.txt file.
+
+Reading CMake configuration...
+Warning! Flash memory size mismatch detected. Expected 8MB, found 2MB!
+Please select a proper value in your `sdkconfig.defaults` or via the `menuconfig` target!
+LDF: Library Dependency Finder -> https://bit.ly/configure-pio-ldf
+LDF Modes: Finder ~ chain, Compatibility ~ soft
+Found 0 compatible libraries
+Scanning dependencies...
+No dependencies
+Building in release mode
+Compiling .pio/build/polverine/src/bme690.c.o
+Compiling .pio/build/polverine/src/https_post.c.o
+Linking .pio/build/polverine/firmware.elf
+Retrieving maximum program size .pio/build/polverine/firmware.elf
+Checking size .pio/build/polverine/firmware.elf
+Advanced Memory Usage is available via "PlatformIO Home > Project Inspect"
+RAM:   [==        ]  19.1% (used 62660 bytes from 327680 bytes)
+Flash: [====      ]  35.3% (used 1110708 bytes from 3145728 bytes)
+Building .pio/build/polverine/firmware.bin
+esptool.py v4.5.1
+Creating esp32s3 image...
+Merged 2 ELF sections
+Successfully created esp32s3 image.
+========================= [SUCCESS] Took 5.46 seconds =========================

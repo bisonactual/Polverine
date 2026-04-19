@@ -7,7 +7,7 @@
 #include "config.h"
 #include "wifi.h"
 #include "bme690.h"
-#include "bmv080.h"
+#include "bmv080_sensor.h"
 #include "https_post.h"
 
 static const char *TAG = "main";

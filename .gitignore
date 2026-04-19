@@ -22,6 +22,10 @@
 *.app
 *.elf
 
+# NVS provisioning (contain secrets)
+firmware/nvs/config.csv
+firmware/nvs/nvs.bin
+
 # Node / pnpm
 node_modules/
 dist/

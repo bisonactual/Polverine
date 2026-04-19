@@ -2,10 +2,11 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "freertos/semphr.h"
+#include "driver/spi_master.h"
 #include "esp_log.h"
 
-#include "bmv080.h"
-#include "bmv080.h"
+#include "bmv080.h"         // Bosch SDK
+#include "bmv080_sensor.h"  // our wrapper API
 #include "bmv080_io.h"
 
 static const char *TAG = "bmv080";
@@ -47,10 +48,10 @@ static void bmv080_task(void *arg)
 
 void bmv080_sensor_init(void)
 {
-    bmv080_io_init();
+    bmv080_sercom_handle_t sercom = bmv080_io_init();
     s_mutex = xSemaphoreCreateMutex();
 
-    bmv080_status_code_t rc = bmv080_open(&s_handle, NULL,
+    bmv080_status_code_t rc = bmv080_open(&s_handle, sercom,
         bmv080_io_read, bmv080_io_write, bmv080_io_delay_ms);
     if (rc != E_BMV080_OK) {
         ESP_LOGE(TAG, "bmv080_open failed: %d", (int)rc);

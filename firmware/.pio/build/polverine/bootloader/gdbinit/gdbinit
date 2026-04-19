@@ -1,0 +1,2 @@
+source /home/owl/git/polverine/Polverine/firmware/.pio/build/polverine/bootloader/gdbinit/symbols
+source /home/owl/git/polverine/Polverine/firmware/.pio/build/polverine/bootloader/gdbinit/connect

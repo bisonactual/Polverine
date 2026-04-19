@@ -271,6 +271,10 @@ static void bsec_new_data(uint8_t sens_no, bsec_output_t *bsec_outputs, uint8_t 
 #include "bsec_temp_offset_tab_target_board.h"
 static float _get_board_specific_temp_offset(float temperature_raw) 
 {
+    (void)temperature_raw;
+#ifdef PLVN_CFG_TEMP_OFFSET_OVERRIDE_C
+    return PLVN_CFG_TEMP_OFFSET_OVERRIDE_C;
+#endif
     uint8_t i;
     uint8_t len;
     const temp_offset_cf_param_t *tocp_cfg = NULL;

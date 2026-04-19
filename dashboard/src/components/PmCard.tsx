@@ -15,17 +15,18 @@ interface Props {
 }
 
 const PM_CARD_TONES: Record<string, string> = {
-  Good: 'bg-emerald-50 border-emerald-200',
-  Moderate: 'bg-yellow-50 border-yellow-200',
-  Sensitive: 'bg-orange-50 border-orange-200',
-  Unhealthy: 'bg-red-50 border-red-200',
+  '0-10': 'bg-emerald-500 text-white border-emerald-600',
+  '10-20': 'bg-green-500 text-white border-green-600',
+  '20-50': 'bg-yellow-400 text-slate-900 border-yellow-500',
+  '50-90': 'bg-orange-500 text-white border-orange-600',
+  '91+': 'bg-red-500 text-white border-red-600',
 }
 
 function Bar({ value, max }: { value: number; max: number }) {
   const pct = Math.min((value / max) * 100, 100)
   const band = getPm25Band(value)
   return (
-    <div className="h-2 rounded-full bg-white/60 overflow-hidden w-full">
+    <div className="h-2 rounded-full bg-white/25 overflow-hidden w-full">
       <div
         className={cn('h-full rounded-full transition-all duration-500', band.color)}
         style={{ width: `${pct}%` }}
@@ -41,18 +42,22 @@ export function PmCard({ pm1, pm2_5, pm10, obstructed, loading }: Props) {
     { label: 'PM10', value: pm10 },
   ]
   const band = pm2_5 !== null ? getPm25Band(pm2_5) : null
-  const tone = band ? PM_CARD_TONES[band.label] ?? 'bg-slate-50 border-slate-200' : 'bg-slate-50 border-slate-200'
+  const tone = band ? PM_CARD_TONES[band.label] ?? 'bg-slate-100 text-slate-900 border-slate-200' : 'bg-slate-100 text-slate-900 border-slate-200'
+  const isLight = band?.label === '20-50'
+  const mutedText = isLight ? 'text-slate-700' : 'text-white/80'
+  const panelBg = isLight ? 'bg-white/55 border-white/70' : 'bg-white/12 border-white/20'
+  const statusBg = isLight ? 'bg-white/55' : 'bg-white/12'
 
   return (
-    <Card className={cn('border-2 shadow-sm', tone, obstructed && 'border-red-300 shadow-red-100')}>
+    <Card className={cn('border-2 shadow-sm', tone, obstructed && 'border-red-700 shadow-red-200')}>
       <CardHeader className="space-y-3">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <CardTitle className="flex items-center gap-2 text-lg uppercase tracking-[0.12em] text-slate-700">
-              <Wind size={18} className="text-sky-500" />
+            <CardTitle className="flex items-center gap-2 text-lg uppercase tracking-[0.12em]">
+              <Wind size={18} className={isLight ? 'text-slate-800' : 'text-white'} />
               Particulate Matter
             </CardTitle>
-            <p className="mt-2 text-sm text-slate-600">
+            <p className={cn('mt-2 text-sm', mutedText)}>
               Fine dust is the primary workshop risk, so this card tracks the live particulate profile first.
             </p>
           </div>
@@ -77,23 +82,25 @@ export function PmCard({ pm1, pm2_5, pm10, obstructed, loading }: Props) {
         ) : (
           <div className="grid gap-4 md:grid-cols-3">
             {rows.map(({ label, value }) => (
-              <div key={label} className="rounded-xl border border-white/70 bg-white/65 p-4 backdrop-blur-sm">
+              <div key={label} className={cn('rounded-xl border p-4 backdrop-blur-sm', panelBg)}>
                 <div className="flex justify-between items-baseline gap-3 mb-3">
-                  <span className="text-sm font-semibold text-slate-700">{label}</span>
-                  <span className="text-lg font-mono font-bold text-slate-900">
+                  <span className={cn('text-sm font-semibold', isLight ? 'text-slate-800' : 'text-white')}>
+                    {label}
+                  </span>
+                  <span className={cn('text-lg font-mono font-bold', isLight ? 'text-slate-950' : 'text-white')}>
                     {value !== null ? `${value.toFixed(1)} µg/m³` : '—'}
                   </span>
                 </div>
-                {value !== null && <Bar value={value} max={label === 'PM10' ? 150 : 75} />}
+                {value !== null && <Bar value={value} max={label === 'PM10' ? 150 : 90} />}
               </div>
             ))}
           </div>
         )}
 
         {!loading && band && (
-          <div className="mt-4 flex items-center justify-between rounded-xl bg-white/70 px-4 py-3 text-sm">
-            <span className="font-medium text-slate-600">PM2.5 status</span>
-            <span className={cn('font-semibold', band.color.replace('bg-', 'text-'))}>{band.label}</span>
+          <div className={cn('mt-4 flex items-center justify-between rounded-xl px-4 py-3 text-sm', statusBg)}>
+            <span className={cn('font-medium', isLight ? 'text-slate-700' : 'text-white/85')}>PM2.5 band</span>
+            <span className={cn('font-semibold', isLight ? 'text-slate-950' : 'text-white')}>{band.label}</span>
           </div>
         )}
       </CardContent>

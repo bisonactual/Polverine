@@ -1,7 +1,7 @@
 {
     "version":            "1.2",
     "project_name":       "polverine_air",
-    "project_version":    "25f027c-dirty",
+    "project_version":    "027eb3e-dirty",
     "project_path":       "/home/owl/git/polverine/Polverine/firmware",
     "idf_path":           "/home/owl/.platformio/packages/framework-espidf",
     "build_dir":          "/home/owl/git/polverine/Polverine/firmware/.pio/build/polverine",

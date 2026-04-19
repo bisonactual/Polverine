@@ -15,10 +15,6 @@
 
 static const char *TAG = "bme690";
 
-#define BME690_HEATSOURCE_OFFSET_C 12.5f
-
-extern float extTempOffset;
-
 static SemaphoreHandle_t       s_data_mutex;
 static sensor_reading_t        s_latest = {0};
 static i2c_master_bus_handle_t s_bus_handle;
@@ -144,8 +140,6 @@ static void bsec_task(void *arg)
         vTaskDelete(NULL);
     }
 
-    extTempOffset = BME690_HEATSOURCE_OFFSET_C;
-    ESP_LOGI(TAG, "BSEC heat-source offset set to %.1f C", extTempOffset);
     ESP_LOGI(TAG, "BSEC running");
     bsec_iot_loop(bsec_state_save, get_timestamp_ms, output_ready);
 

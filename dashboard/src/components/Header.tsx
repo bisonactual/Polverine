@@ -19,7 +19,7 @@ export function Header({ deviceId, lastUpdated, online, refreshing, onRefresh }:
             <Wind size={20} className="text-primary" />
           </div>
           <div>
-            <h1 className="font-bold text-base leading-none">Polverine</h1>
+            <h1 className="font-bold text-base leading-none">Hackspace Air Quality Monitor</h1>
             <p className="text-xs text-muted-foreground mt-0.5">{deviceId}</p>
           </div>
         </div>

@@ -12,30 +12,36 @@ static spi_device_handle_t s_spi = NULL;
 bmv080_sercom_handle_t bmv080_io_init(void)
 {
     spi_bus_config_t bus_cfg = {
-        .mosi_io_num   = BMV080_PIN_MOSI,
-        .miso_io_num   = BMV080_PIN_MISO,
-        .sclk_io_num   = BMV080_PIN_CLK,
+        .mosi_io_num = BMV080_PIN_MOSI,
+        .miso_io_num = BMV080_PIN_MISO,
+        .sclk_io_num = BMV080_PIN_CLK,
         .quadwp_io_num = -1,
         .quadhd_io_num = -1,
         .max_transfer_sz = 4096,
     };
-    ESP_ERROR_CHECK(spi_bus_initialize(BMV080_SPI_HOST, &bus_cfg, SPI_DMA_CH_AUTO));
+
+    esp_err_t err = spi_bus_initialize(BMV080_SPI_HOST, &bus_cfg, SPI_DMA_CH_AUTO);
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "spi_bus_initialize failed: %s", esp_err_to_name(err));
+        return NULL;
+    }
 
     spi_device_interface_config_t dev_cfg = {
-        .address_bits   = 16,
+        .address_bits = 16,
         .clock_speed_hz = BMV080_SPI_FREQ_HZ,
-        .mode           = 0,
-        .spics_io_num   = BMV080_PIN_CS,
-        .queue_size     = 1,
+        .mode = 0,
+        .spics_io_num = BMV080_PIN_CS,
+        .queue_size = 1,
     };
-    ESP_ERROR_CHECK(spi_bus_add_device(BMV080_SPI_HOST, &dev_cfg, &s_spi));
+    err = spi_bus_add_device(BMV080_SPI_HOST, &dev_cfg, &s_spi);
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "spi_bus_add_device failed: %s", esp_err_to_name(err));
+        return NULL;
+    }
+
     ESP_LOGI(TAG, "SPI init ok");
     return (bmv080_sercom_handle_t)s_spi;
 }
-
-// SDK passes sercom_handle as the SPI device handle (void*).
-// header is a 16-bit word sent MSB-first as the address phase.
-// payload words are 16-bit, MSB-first on the wire — swap to/from little-endian.
 
 int8_t bmv080_io_read(bmv080_sercom_handle_t sercom_handle, uint16_t header,
                       uint16_t *payload, uint16_t payload_length)
@@ -44,20 +50,22 @@ int8_t bmv080_io_read(bmv080_sercom_handle_t sercom_handle, uint16_t header,
 
     spi_transaction_ext_t t = {
         .base = {
-            .flags     = SPI_TRANS_VARIABLE_ADDR | SPI_TRANS_VARIABLE_CMD,
-            .addr      = header,
-            .length    = payload_length * 16,
-            .rxlength  = payload_length * 16,
+            .flags = SPI_TRANS_VARIABLE_ADDR | SPI_TRANS_VARIABLE_CMD,
+            .addr = header,
+            .length = payload_length * 16,
+            .rxlength = payload_length * 16,
             .rx_buffer = payload,
             .tx_buffer = NULL,
         },
         .command_bits = 0,
         .address_bits = 16,
-        .dummy_bits   = 0,
+        .dummy_bits = 0,
     };
 
     esp_err_t err = spi_device_polling_transmit(spi, (spi_transaction_t *)&t);
-    if (err != ESP_OK) return -1;
+    if (err != ESP_OK) {
+        return -1;
+    }
 
     for (int i = 0; i < payload_length; i++) {
         payload[i] = (uint16_t)((payload[i] << 8) | (payload[i] >> 8));
@@ -71,7 +79,9 @@ int8_t bmv080_io_write(bmv080_sercom_handle_t sercom_handle, uint16_t header,
     spi_device_handle_t spi = (spi_device_handle_t)sercom_handle;
 
     uint16_t *swapped = malloc(payload_length * sizeof(uint16_t));
-    if (!swapped) return -1;
+    if (!swapped) {
+        return -1;
+    }
 
     for (int i = 0; i < payload_length; i++) {
         swapped[i] = (uint16_t)((payload[i] << 8) | (payload[i] >> 8));
@@ -79,15 +89,15 @@ int8_t bmv080_io_write(bmv080_sercom_handle_t sercom_handle, uint16_t header,
 
     spi_transaction_ext_t t = {
         .base = {
-            .flags     = SPI_TRANS_VARIABLE_ADDR | SPI_TRANS_VARIABLE_CMD,
-            .addr      = header,
-            .length    = payload_length * 16,
+            .flags = SPI_TRANS_VARIABLE_ADDR | SPI_TRANS_VARIABLE_CMD,
+            .addr = header,
+            .length = payload_length * 16,
             .rx_buffer = NULL,
             .tx_buffer = swapped,
         },
         .command_bits = 0,
         .address_bits = 16,
-        .dummy_bits   = 0,
+        .dummy_bits = 0,
     };
 
     esp_err_t err = spi_device_transmit(spi, (spi_transaction_t *)&t);

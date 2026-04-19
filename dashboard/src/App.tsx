@@ -16,6 +16,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { IaqHistoryChart, TempHumidityChart, PmHistoryChart } from '@/components/HistoryChart'
 
 const DEVICE_ID      = import.meta.env.VITE_DEVICE_ID ?? 'workshop-01'
+const DEVICE_LABEL   = 'Woodwork'
 const POLL_INTERVAL  = 30_000
 
 export default function App() {
@@ -61,7 +62,7 @@ export default function App() {
   return (
     <div className="min-h-screen bg-background">
       <Header
-        deviceId={DEVICE_ID}
+        deviceId={DEVICE_LABEL}
         lastUpdated={latest?.ts ?? null}
         online={online}
         refreshing={refreshing}

@@ -17,7 +17,7 @@ static esp_err_t http_event_handler(esp_http_client_event_t *evt)
 
 esp_err_t https_post_reading(const sensor_reading_t *r)
 {
-    if (g_config.worker_url[0] == '\0') {
+    if (g_config.worker_url[0] == 0) {
         ESP_LOGW(TAG, "worker_url not configured, skipping post");
         return ESP_ERR_INVALID_STATE;
     }
@@ -36,14 +36,16 @@ esp_err_t https_post_reading(const sensor_reading_t *r)
         "\"voc_eq\":%.3f,"
         "\"pm1\":%.1f,"
         "\"pm2_5\":%.1f,"
-        "\"pm10\":%.1f"
+        "\"pm10\":%.1f,"
+        "\"obstructed\":%s"
         "}",
         g_config.device_id,
         r->timestamp,
         r->iaq, r->iaq_accuracy,
         r->temperature, r->humidity, r->pressure,
         r->co2_eq, r->voc_eq,
-        r->pm1, r->pm2_5, r->pm10);
+        r->pm1, r->pm2_5, r->pm10,
+        r->obstructed ? "true" : "false");
 
     if (len >= (int)sizeof(body)) {
         ESP_LOGE(TAG, "body truncated");

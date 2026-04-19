@@ -14,6 +14,7 @@ typedef struct {
     float pm2_5;
     float pm10;
     bool  pm_valid;
+    bool  obstructed;
     long  timestamp;
 } sensor_reading_t;
 

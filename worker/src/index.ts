@@ -16,6 +16,7 @@ interface Reading {
   pm1: number;
   pm2_5: number;
   pm10: number;
+  obstructed?: boolean;
 }
 
 const CORS = {
@@ -59,8 +60,8 @@ async function handleIngest(request: Request, env: Env): Promise<Response> {
 
   await env.DB.prepare(
     `INSERT INTO readings
-       (device_id, ts, iaq, iaq_accuracy, temperature, humidity, pressure, co2_eq, voc_eq, pm1, pm2_5, pm10)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+       (device_id, ts, iaq, iaq_accuracy, temperature, humidity, pressure, co2_eq, voc_eq, pm1, pm2_5, pm10, obstructed)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
   ).bind(
     body.device_id,
     body.timestamp,
@@ -73,7 +74,8 @@ async function handleIngest(request: Request, env: Env): Promise<Response> {
     body.voc_eq ?? null,
     body.pm1 ?? null,
     body.pm2_5 ?? null,
-    body.pm10 ?? null
+    body.pm10 ?? null,
+    body.obstructed === undefined ? null : body.obstructed ? 1 : 0,
   ).run();
 
   return json({ ok: true });
@@ -94,7 +96,7 @@ async function handleLatest(request: Request, env: Env): Promise<Response> {
 async function handleReadings(request: Request, env: Env): Promise<Response> {
   const url = new URL(request.url);
   const deviceId = url.searchParams.get('device_id') ?? 'workshop-01';
-  const hours = Math.min(parseInt(url.searchParams.get('hours') ?? '24'), 168);
+  const hours = Math.min(parseInt(url.searchParams.get('hours') ?? '24', 10), 24 * 30);
   const since = Math.floor(Date.now() / 1000) - hours * 3600;
 
   const { results } = await env.DB.prepare(
@@ -119,10 +121,10 @@ export default {
 
     const { pathname } = new URL(request.url);
 
-    if (request.method === 'POST' && pathname === '/ingest')   return handleIngest(request, env);
-    if (request.method === 'GET'  && pathname === '/latest')   return handleLatest(request, env);
-    if (request.method === 'GET'  && pathname === '/readings') return handleReadings(request, env);
-    if (request.method === 'GET'  && pathname === '/devices')  return handleDevices(env);
+    if (request.method === 'POST' && pathname === '/ingest') return handleIngest(request, env);
+    if (request.method === 'GET' && pathname === '/latest') return handleLatest(request, env);
+    if (request.method === 'GET' && pathname === '/readings') return handleReadings(request, env);
+    if (request.method === 'GET' && pathname === '/devices') return handleDevices(env);
 
     return new Response('Not Found', { status: 404, headers: CORS });
   },

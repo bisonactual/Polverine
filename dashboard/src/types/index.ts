@@ -12,4 +12,5 @@ export interface Reading {
   pm1: number
   pm2_5: number
   pm10: number
+  obstructed: boolean
 }

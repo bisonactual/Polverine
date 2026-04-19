@@ -18,11 +18,17 @@ static struct {
     float pm2_5;
     float pm10;
     bool valid;
+    bool obstructed;
 } s_latest = {0};
 
 static void data_ready_cb(bmv080_output_t output, void *param)
 {
     (void)param;
+
+    xSemaphoreTake(s_mutex, portMAX_DELAY);
+    s_latest.obstructed = output.is_obstructed;
+    xSemaphoreGive(s_mutex);
+
     if (output.is_obstructed || output.is_outside_measurement_range) {
         return;
     }
@@ -116,5 +122,6 @@ void bmv080_get_latest(sensor_reading_t *out)
     out->pm2_5 = s_latest.pm2_5;
     out->pm10 = s_latest.pm10;
     out->pm_valid = s_latest.valid;
+    out->obstructed = s_latest.obstructed;
     xSemaphoreGive(s_mutex);
 }
